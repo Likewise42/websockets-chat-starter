@@ -1,0 +1,29 @@
+{
+  "name": "websockets-chat-starter",
+  "version": "1.0.0",
+  "description": "websockets chatroom excsercise",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests Complete\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Likewise42/websockets-chat-starter.git"
+  },
+  "author": "Ryan Muskopf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Likewise42/websockets-chat-starter/issues"
+  },
+  "homepage": "https://github.com/Likewise42/websockets-chat-starter#readme",
+  "dependencies": {
+    "socket.io": "^1.7.2"
+  },
+  "devDependencies": {
+    "eslint": "^3.15.0",
+    "eslint-config": "^0.3.0",
+    "eslint-plugin-import": "^2.2.0"
+  }
+}

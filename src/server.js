@@ -4,11 +4,11 @@ const socketio = require('socket.io');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-//read client into memory
+// read client into memory
 const index = fs.readFileSync(`${__dirname}/../client/client.html`);
 
 const onRequest = (request, response) => {
-  response.writeHead(200, {'Content-Type': 'text/html'});
+  response.writeHead(200, { 'Content-Type': 'text/html' });
   response.write(index);
   response.end();
 };

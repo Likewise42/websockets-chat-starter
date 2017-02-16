@@ -36,7 +36,9 @@
             user = 'unknown';
           }
           
-          socket.emit('join', {name: user});
+          const userArray = user.split(" ");
+          
+          socket.emit('join', {name: userArray[0]});
         });
           
         socket.on('msg', (data) => {
@@ -44,12 +46,42 @@
           
           const messageString = data.name +": "+data.msg;
           
-          addToText(messageString, chat);
+          addToText(messageString);
         });
       };
 
       const sendMessage = () => {
-        socket.emit('msgToServer', {name: user, msg: message.value})
+        
+        //get array for message
+        let messageArray = message.value.split(" ");
+        
+        //get first word
+        let firstWord = messageArray[0].split("");
+        
+        //check for commands
+        if(firstWord[0] == '/'){
+          //help command for list of all other commands
+          if(messageArray[0] == "/help"){
+            printHelp();
+          }else if(messageArray[0] == "/name"){
+            if(messageArray[1]){
+              changeName(messageArray[1]);
+            }else{
+              addToText("No name given. Please enter a name next time!");
+            }
+          }
+          
+          else{
+            addToText("I don't recognize that command. Try /help for more options!")
+          }
+        }else{
+          socket.emit('msgToServer', {name: user, msg: message.value})
+        }
+        
+      };
+
+      const changeName = (newName) => {
+        socket.emit('changeName', {newName:newName});
       };
 
       const init = () => {
@@ -59,10 +91,14 @@
       };
 
       //adds to the text area
-      const addToText = (message,chatBox) => {
-        chatBox.innerHTML = chatBox.innerHTML + message + "\n";
+      const addToText = (message) => {
+        chat.innerHTML = chat.innerHTML + message + "\n";
       };
       
+      const printHelp = () => {
+        addToText("Use /name [NEWNAME] to rename your self.");
+      };
+
       window.onload = init;
       
     </script>

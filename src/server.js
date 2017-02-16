@@ -23,6 +23,28 @@ const io = socketio(app);
 // objsect to store all users
 const users = {};
 
+const nameValid = (sock) => {
+  const socket = sock;
+  // check if name alreay in use
+  let uName = true;
+  let nameChanged = false;
+  let nextUserNum = 0;
+  const originalName = socket.name;
+  do {
+    if (users[socket.name]) {
+      uName = false;
+      nameChanged = true;
+      nextUserNum++;
+      socket.name = originalName + nextUserNum;
+    } else {
+      uName = true;
+    }
+  } while (!uName);
+  if (nameChanged) {
+    socket.emit('msg', { name: 'server', msg: `Your name was not unique and was changed to ${socket.name}.` });
+  }
+};
+
 // delegate fucntions
 const onJoined = (sock) => {
   const socket = sock;
@@ -36,25 +58,7 @@ const onJoined = (sock) => {
     socket.name = data.name;
     socket.emit('msg', joinMsg);
 
-    // check if name alreay in use
-    let uName = true;
-    let nameChanged = false;
-    let nextUserNum = 0;
-    const originalName = socket.name;
-    do {
-      if (users[socket.name]) {
-        uName = false;
-        nameChanged = true;
-        nextUserNum++;
-        socket.name = originalName + nextUserNum;
-      } else {
-        uName = true;
-      }
-    } while (!uName);
-
-    if (nameChanged) {
-      socket.emit('msg', { name: 'server', msg: `Your name was not unique and was changed to ${socket.name}.` });
-    }
+    nameValid(socket);
 
     users[socket.name] = socket;
 
@@ -77,6 +81,13 @@ const onJoined = (sock) => {
 
 const onMsg = (sock) => {
   const socket = sock;
+
+  socket.on('changeName', (data) => {
+    const oldName = socket.name;
+    socket.name = data.newName;
+    nameValid(socket);
+    io.sockets.in('room1').emit('msg', { name: 'server', msg: `User ${oldName} has changed their name to ${socket.name}` });
+  });
 
   socket.on('msgToServer', (data) => {
     io.sockets.in('room1').emit('msg', { name: socket.name, msg: data.msg });

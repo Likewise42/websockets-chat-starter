@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   
     <script type="text/babel">
+      const username = document.querySelector("#username");
       const message = document.querySelector("#message");
       const chat = document.querySelector("#chat");
       let socket;
@@ -30,7 +31,7 @@
         socket.on('connect', () => {
           console.log('connecting');
           
-          user = document.querySelector("#username").value;
+          user = username.value;
           
           if(!user) {
             user = 'unknown';
@@ -40,6 +41,11 @@
           user = userArray[0];
           
           socket.emit('join', {name: user});
+          
+          clearBoxes();
+          document.querySelector("#usernameLabel").style.display='none';
+          username.style.display='none';
+          document.querySelector("#connect").style.display='none';
         });
           
         socket.on('msg', (data) => {
@@ -48,6 +54,12 @@
           const messageString = data.name +": "+data.msg;
           
           addToText(messageString);
+          
+          chat.scrollTop = chat.scrollHeight;
+        });
+        
+        socket.on('color', (data) => {
+          recieveColor(data.color);
         });
       };
 
@@ -80,6 +92,14 @@
             }else{
               addToText("No name given. Please enter a name next time!");
             }
+            
+            //change box cover
+          }else if(messageArray[0] == "/color"){
+            if(messageArray[1]){
+              sendColor(messageArray[1]);
+            }else{
+              addToText("No color given. Please enter a color next time!");
+            }
           }
           
           else{
@@ -88,7 +108,20 @@
         }else{
           socket.emit('msgToServer', {name: user, msg: message.value})
         }
-        
+        clearBoxes();
+      };
+
+      const sendColor = (color) => {
+        socket.emit('colorChange', {from: user, color: color});
+      };
+
+      const recieveColor = (color) => {
+        chat.style.backgroundColor = color;
+      };
+
+      const clearBoxes = () => {
+        username.value = "";
+        message.value = "";
       };
 
       const privateMessage = (message, messageArray) => {
@@ -113,6 +146,7 @@
       const printHelp = () => {
         addToText("Use /name [NEWNAME] to rename your self.");
         addToText("Use /w [NAME] to private message.");
+        addToText("Use /color [COLOR] to change the chat's color.");
       };
 
       window.onload = init;
@@ -123,18 +157,18 @@
 		textarea {
 			display: block;
 			background-color: #EEEEEE;
+            overflow-y: scroll;
 		}
 	</style>
 </head>
 <body>
-	<label for="user">Username:</label>
+	<label id="usernameLabel" for="user">Username:</label>
 	<input id="username" name="user" type="text"/>
 	<input id="connect" type='button' value='connect'/>
 	</br>
-	<label for="message">Message:</label>
+	<textarea id="chat" rows="20" cols="40" readonly></textarea>
+  	<label for="message">Message:</label>
 	<input id="message" name="message" type="text"/>
 	<input id="send" type="button" value="send" />
-	
-	<textarea id="chat" rows="20" cols="40" readonly></textarea>
 </body>
 </html>

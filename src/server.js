@@ -27,69 +27,69 @@ const users = {};
 const onJoined = (sock) => {
   const socket = sock;
   socket.on('join', (data) => {
-    //message back to new user
-    const joinMsg ={
-      name:'server',
+    // message back to new user
+    const joinMsg = {
+      name: 'server',
       msg: `There are ${Object.keys(users).length} other users online`,
     };
-    
+
     socket.name = data.name;
     socket.emit('msg', joinMsg);
-    
-    //check if name alreay in use
+
+    // check if name alreay in use
     let uName = true;
     let nameChanged = false;
     let nextUserNum = 0;
     const originalName = socket.name;
     do {
-      if (users[socket.name]){
+      if (users[socket.name]) {
         uName = false;
         nameChanged = true;
         nextUserNum++;
-        socket.name = originalName+nextUserNum;
-      }else{
+        socket.name = originalName + nextUserNum;
+      } else {
         uName = true;
       }
     } while (!uName);
-  
-    if(nameChanged){
-      socket.emit('msg', {name: 'server',msg:`Your name was not unique and was changed to ${socket.name}.`})
+
+    if (nameChanged) {
+      socket.emit('msg', { name: 'server', msg: `Your name was not unique and was changed to ${socket.name}.` });
     }
-  
+
     users[socket.name] = socket;
-    
+
     socket.join('room1');
-    
-    //announcemnt
-    const response ={
+
+    // announcemnt
+    const response = {
       name: 'server',
       msg: `${socket.name} has joined the room.`,
     };
-    socket.broadcast.to('room1').emit('msg',response);
-    
-    
+    socket.broadcast.to('room1').emit('msg', response);
+
+
     console.log(`${socket.name} joined`);
-    
-    //success message backto the server
-    socket.emit('msg', {name:'server',msg:'You joined the room'})
+
+    // success message backto the server
+    socket.emit('msg', { name: 'server', msg: 'You joined the room' });
   });
 };
 
 const onMsg = (sock) => {
   const socket = sock;
-  
-  socket.on('msgToServer', (data) =>{
-    io.sockets.in('room1').emit('msg', {name: socket.name, msg:data.msg});
+
+  socket.on('msgToServer', (data) => {
+    io.sockets.in('room1').emit('msg', { name: socket.name, msg: data.msg });
   });
 };
 
 const onDisconnect = (sock) => {
   const socket = sock;
-  
-  socket.on('disconnect', (data) =>{
+
+  socket.on('disconnect', () => {
     delete users[socket.name];
-    io.sockets.in('room1').emit('msg', {name: 'server', msg:`User ${socket.name} disconnected`});
-    console.log("disconnect detected from: " + socket.name +". "+Object.keys(users).length+" users remain.");
+    io.sockets.in('room1').emit('msg', { name: 'server', msg: `User ${socket.name} disconnected` });
+    console.log(`disconnect detected from: ${socket.name}. ${Object.keys(users).length} users remain.`);
   });
 };
 

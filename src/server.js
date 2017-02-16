@@ -82,6 +82,28 @@ const onJoined = (sock) => {
 const onMsg = (sock) => {
   const socket = sock;
 
+  socket.on('privateMessage', (data) => {
+    if (users[data.to]) {
+      
+      const messageArray = data.fullMessage.split(" ");
+      let pMessage = "";
+      
+      //create the actual message
+      if(messageArray.length > 2){
+        let wordNum = 2;
+        do{
+          pMessage+=messageArray[wordNum];
+          wordNum++;
+        } while(messageArray[wordNum]);
+      }
+      
+      socket.emit('msg', { name: `${socket.name} to ${data.to}`, msg: pMessage});
+      users[data.to].emit('msg', { name: `${socket.name} to ${data.to}`, msg: pMessage});
+    } else {
+      socket.emit('msg', { name: 'server', msg: 'That person is not on the server at this time' });
+    }
+  });
+
   socket.on('changeName', (data) => {
     const oldName = socket.name;
     socket.name = data.newName;

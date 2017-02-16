@@ -37,8 +37,9 @@
           }
           
           const userArray = user.split(" ");
+          user = userArray[0];
           
-          socket.emit('join', {name: userArray[0]});
+          socket.emit('join', {name: user});
         });
           
         socket.on('msg', (data) => {
@@ -63,9 +64,19 @@
           //help command for list of all other commands
           if(messageArray[0] == "/help"){
             printHelp();
+            
+            //name change
           }else if(messageArray[0] == "/name"){
             if(messageArray[1]){
               changeName(messageArray[1]);
+            }else{
+              addToText("No name given. Please enter a name next time!");
+            }
+            
+            //private messaging
+          }else if(messageArray[0] == "/w"){
+            if(messageArray[1]){
+              privateMessage(message.value,messageArray);
             }else{
               addToText("No name given. Please enter a name next time!");
             }
@@ -78,6 +89,10 @@
           socket.emit('msgToServer', {name: user, msg: message.value})
         }
         
+      };
+
+      const privateMessage = (message, messageArray) => {
+        socket.emit('privateMessage', {from:user, to:messageArray[1], fullMessage: message});
       };
 
       const changeName = (newName) => {
@@ -97,6 +112,7 @@
       
       const printHelp = () => {
         addToText("Use /name [NEWNAME] to rename your self.");
+        addToText("Use /w [NAME] to private message.");
       };
 
       window.onload = init;

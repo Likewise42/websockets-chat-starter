@@ -10,8 +10,64 @@
          online at your node.js address under /socket.io/socket.io.js 
          You can disable that on the server if desired
     -->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
-	<style>
+  
+    <script type="text/babel">
+      const message = document.querySelector("#message");
+      const chat = document.querySelector("#chat");
+      let socket;
+      let user = "NA";
+
+
+      const connectSocket = (e) => {
+        socket = io.connect();
+        
+        const sendButton = document.querySelector("#send");
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        socket.on('connect', () => {
+          console.log('connecting');
+          
+          user = document.querySelector("#username").value;
+          
+          if(!user) {
+            user = 'unknown';
+          }
+          
+          socket.emit('join', {name: user});
+        });
+          
+        socket.on('msg', (data) => {
+          console.log(data);
+          
+          const messageString = data.name +": "+data.msg;
+          
+          addToText(messageString, chat);
+        });
+      };
+
+      const sendMessage = () => {
+        socket.emit('msgToServer', {name: user, msg: message.value})
+      };
+
+      const init = () => {
+        //connect button
+        const connect = document.querySelector("#connect");
+        connect.addEventListener('click', connectSocket);
+      };
+
+      //adds to the text area
+      const addToText = (message,chatBox) => {
+        chatBox.innerHTML = chatBox.innerHTML + message + "\n";
+      };
+      
+      window.onload = init;
+      
+    </script>
+	
+    <style>
 		textarea {
 			display: block;
 			background-color: #EEEEEE;
@@ -27,6 +83,6 @@
 	<input id="message" name="message" type="text"/>
 	<input id="send" type="button" value="send" />
 	
-	<textarea id="chat" rows="20" cols="40" readonly> </textarea>
+	<textarea id="chat" rows="20" cols="40" readonly></textarea>
 </body>
 </html>
